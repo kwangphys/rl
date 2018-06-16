@@ -1,1 +1,1 @@
-# rl
+# Deep Recurrent Double-Q Network
