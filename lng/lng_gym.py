@@ -60,8 +60,8 @@ class SingleLngEnv(Env):
 
     def normalize_states(self, states):
         normed_states = states.T.flatten()
-        normed_states[:self.n_loc * 2] /= self.highs[0] * 2.0
-        normed_states[self.n_loc * 2:] = (np.log(normed_states[self.n_loc * 2:]) - self.log_base_price) / self.long_term_vol / np.sqrt(self.n_steps)
+        normed_states[:self.n_loc * 2] = normed_states[:self.n_loc * 2] / self.highs[0] * 2.0 - 1.0
+        normed_states[self.n_loc * 2:] = (np.log(normed_states[self.n_loc * 2:]) - self.log_base_price) / self.long_term_vol
         normed_states = np.concatenate([normed_states, np.array([self._curr_state])])
         return normed_states
 
@@ -108,7 +108,7 @@ class SingleLngEnv(Env):
         self._istep += 1
         if self.verbose:
             norm_states = self.normalize_states(states)
-            print('Step', self._istep, 'State:', norm_states[-1], 'Action:', action, 'Reward:', reward, 'Position:', self._pos, 'Profit:', self._profit)
+            print('Step', self._istep, 'State:', norm_states[0], norm_states[-2], norm_states[-1], 'Action:', action, 'Reward:', reward, 'Position:', self._pos, 'Profit:', self._profit)
         return states, reward, self._istep >= self.n_steps, {}
 
     def reset(self):
