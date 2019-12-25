@@ -12,7 +12,7 @@ class SingleLngEnv(Env):
         'video.frames_per_second': 4
     }
 
-    def __init__(self, n_loc, n_steps, fuel_cost, price_sigma, price_daily_vol, price_theta, max_distance):
+    def __init__(self, n_loc, n_steps, fuel_cost, price_sigma, price_daily_vol, price_theta, max_distance, normalize=False):
         """ Vehicle speed is always 1
         :param n_loc: number of locations
         :param n_steps: number of steps for each run
@@ -21,6 +21,7 @@ class SingleLngEnv(Env):
         :param price_daily_vol: volatility for daily prices
         :param price_theta: mean reversion strength for daily prices
         :param max_distance: max_distance of the region
+        :param normalize: False: return states of shape (n_loc, 3), True, return normalized states of shape (n_loc * 3 + 1,)
         """
         self.base_price = 100.0
         self.log_base_price = np.log(self.base_price)
@@ -41,6 +42,7 @@ class SingleLngEnv(Env):
         self.one_step_vol = self.long_term_vol * np.sqrt(1.0 - self.ethetadt ** 2)
         self.verbose = False
 
+        self._normalize = normalize
         self._locations = None
         self._prices = None
         self._logprices = None
@@ -106,6 +108,12 @@ class SingleLngEnv(Env):
         # profits = -self._prices if self._cost is None else self._prices - self._cost
         states = np.concatenate([self._relative_locations, self._prices.reshape(-1, 1)], axis=1)
         self._istep += 1
+        if self._normalize:
+            norm_states = self.normalize_states(states)
+            if self.verbose:
+                print('Step', self._istep, 'State:', norm_states[0], norm_states[-2], norm_states[-1], 'Action:', action, 'Reward:', reward, 'Position:', self._pos, 'Profit:', self._profit)
+            return norm_states, reward, self._istep >= self.n_steps, {}
+
         if self.verbose:
             norm_states = self.normalize_states(states)
             print('Step', self._istep, 'State:', norm_states[0], norm_states[-2], norm_states[-1], 'Action:', action, 'Reward:', reward, 'Position:', self._pos, 'Profit:', self._profit)
@@ -132,7 +140,10 @@ class SingleLngEnv(Env):
                 print(i, self._locations[i], self._prices[i])
 
         # profits = -self._prices if self._cost is None else self._prices - self._cost
-        return np.concatenate([self._relative_locations, self._prices.reshape(-1, 1)], axis=1)
+        states = np.concatenate([self._relative_locations, self._prices.reshape(-1, 1)], axis=1)
+        if self._normalize:
+            return self.normalize_states(states)
+        return states
 
     def render(self, mode='human'):
         screen_width = 600

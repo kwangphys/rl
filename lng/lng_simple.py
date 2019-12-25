@@ -5,8 +5,8 @@ import time
 
 class SimpleLngSolver(object):
 
-    def solve(self, env):
-        env.seed(3722)
+    def solve(self, env, seed):
+        env.seed(seed)
         env.verbose = True
         states = env.reset()
         env.render()
@@ -36,4 +36,4 @@ env = SingleLngEnv(
     max_distance=30.0
 )
 solver = SimpleLngSolver()
-solver.solve(env)
+solver.solve(env, 3721)
