@@ -14,6 +14,8 @@ GAMMA = 0.99  # discount factor
 TAU = 1e-3  # for soft update of target parameters
 LR = 5e-4  # learning rate
 UPDATE_EVERY = 4  # how often to update the network
+EPS_DECAY = 0.9999  # decay rate of epsilon, i.e. exploration rate
+EPS_MIN = 0.1 # minimum epsilon, i.e. exploration rate
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -118,17 +120,18 @@ class Agent():
     def train(self, env, n_episodes=1000, max_t=1000):
         scores_deque = deque(maxlen=100)
         scores = []
+        eps = 1.0
         for i_episode in range(1, n_episodes + 1):
             state = env.reset()
             score = 0
             for t in range(max_t):
-                action = self.act(state)
-                # choice = np.argmax(action)
-                choice = np.random.randint(0, env.n_loc)
-                next_state, reward, done, _ = env.step(choice)
+                action = self.act(state, eps)
+                next_state, reward, done, _ = env.step(action)
                 self.step(state, action, reward, next_state, done)
                 state = next_state
                 score += reward
+                if eps > EPS_MIN:
+                    eps *= EPS_DECAY
                 if done:
                     break
             scores_deque.append(score)
@@ -138,7 +141,7 @@ class Agent():
             if i_episode % 1 == 0:
                 # torch.save(self.agent.actor_local.state_dict(), 'checkpoint_actor.pth')
                 # torch.save(self.agent.critic_local.state_dict(), 'checkpoint_critic.pth')
-                print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
+                print('\rEpisode {}\tAverage Score: {:.2f}\tEps: {:.2f}'.format(i_episode, np.mean(scores_deque), eps))
         return scores
 
 

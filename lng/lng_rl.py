@@ -36,8 +36,8 @@ env = SingleLngEnv(
     normalize=True
 )
 
-from ddpg import Agent
-# from dqn import Agent
+# from ddpg import Agent
+from dqn import Agent
 agent = Agent(state_size=env.n_loc * 3 + 1, action_size=env.n_loc, random_seed=seed)
 agent.train(env, 10, 1000)
 
