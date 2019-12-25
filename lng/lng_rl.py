@@ -39,7 +39,7 @@ env = SingleLngEnv(
 # from ddpg import Agent
 from dqn import Agent
 agent = Agent(state_size=env.n_loc * 3 + 1, action_size=env.n_loc, random_seed=seed)
-agent.train(env, 10, 1000)
+agent.train(env, 1000, 1000)
 
 solver = DdpgLngSolver(env, agent, 3721)
 solver.solve()

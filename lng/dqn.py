@@ -14,7 +14,7 @@ GAMMA = 0.99  # discount factor
 TAU = 1e-3  # for soft update of target parameters
 LR = 5e-4  # learning rate
 UPDATE_EVERY = 4  # how often to update the network
-EPS_DECAY = 0.9999  # decay rate of epsilon, i.e. exploration rate
+EPS_DECAY = 0.99999  # decay rate of epsilon, i.e. exploration rate
 EPS_MIN = 0.1 # minimum epsilon, i.e. exploration rate
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -138,10 +138,9 @@ class Agent():
             scores.append(score)
             print('\rEpisode {}\tAverage Score: {:.2f}\tScore: {:.2f}'.format(i_episode, np.mean(scores_deque), score),
                   end="")
-            if i_episode % 1 == 0:
-                # torch.save(self.agent.actor_local.state_dict(), 'checkpoint_actor.pth')
-                # torch.save(self.agent.critic_local.state_dict(), 'checkpoint_critic.pth')
-                print('\rEpisode {}\tAverage Score: {:.2f}\tEps: {:.2f}'.format(i_episode, np.mean(scores_deque), eps))
+            if i_episode % 100 == 0:
+                torch.save(self.qnetwork_local.state_dict(), 'checkpoint.pth')
+            print('\rEpisode {}\tAverage Score: {:.2f}\tEps: {:.2f}'.format(i_episode, np.mean(scores_deque), eps))
         return scores
 
 
