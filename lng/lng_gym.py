@@ -54,6 +54,7 @@ class SingleLngEnv(Env):
         self._profit = 0.0
         self._mtm = 0.0
         self._relative_locations = None
+        self._curr_state2 = -1
         self._curr_state = -1
         self._prve_state = -1
 
@@ -64,7 +65,7 @@ class SingleLngEnv(Env):
         normed_states = states.T.flatten()
         normed_states[:self.n_loc * 2] = normed_states[:self.n_loc * 2] / self.highs[0] * 2.0 - 1.0
         normed_states[self.n_loc * 2:] = (np.log(normed_states[self.n_loc * 2:]) - self.log_base_price) / self.long_term_vol
-        normed_states = np.concatenate([normed_states, np.array([self._curr_state])])
+        normed_states = np.concatenate([normed_states, np.array([self._curr_state, self._curr_state2])])
         return normed_states
 
     def step(self, action):
@@ -94,15 +95,15 @@ class SingleLngEnv(Env):
             self._pos = np.array(self._locations[action])
             if self._cost is None: # Load from this port
                 self._cost = self._prices[action]
-                self._curr_state = 1
+                self._curr_state2 = 1
             else: # Dump to this port
                 # reward += self._prices[action] - self._cost
                 self._cost = None
-                self._curr_state = -1
+                self._curr_state2 = -1
         else:
             self._pos += diff / distance
-            self._curr_state = 0
-
+            self._curr_state2 = 0
+        self._curr_state = -1 if self._cost is None else 1
         self._profit += reward
         self._relative_locations = self._locations - self._pos
         # profits = -self._prices if self._cost is None else self._prices - self._cost
@@ -120,6 +121,7 @@ class SingleLngEnv(Env):
         return states, reward, self._istep >= self.n_steps, {}
 
     def reset(self):
+        # self.seed()
         self._locations = self.np_random.uniform(0.0, self.max_distance, size=(self.n_loc, 2))
         self._prices = self.base_price * np.exp(self.np_random.normal(0.0, self.price_sigma, size=self.n_loc))
         self._prices = np.minimum(np.maximum(self._prices, self.lows[2]), self.highs[2])
@@ -131,6 +133,7 @@ class SingleLngEnv(Env):
         self._prev_action = None
         self._profit = 0.0
         self._mtm = 0.0
+        self._curr_state2 = -1
         self._curr_state = -1
         self._prev_state = -1
         self._relative_locations = self._locations - self._pos
@@ -178,6 +181,7 @@ class SingleLngEnv(Env):
             if cost_label:
                 cost_label.draw()
             profit_label.draw()
+            pyglet.image.get_buffer_manager().get_color_buffer().save(r'results/' + '{:04}'.format(self._istep) + '.png')
 
         self.window.switch_to()
         self.window.dispatch_events()

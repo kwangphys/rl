@@ -11,11 +11,11 @@ import torch.optim as optim
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 64  # minibatch size
 GAMMA = 0.99  # discount factor
-TAU = 1e-3  # for soft update of target parameters
+TAU = 1e-2  # for soft update of target parameters
 LR = 5e-4  # learning rate
 UPDATE_EVERY = 4  # how often to update the network
-EPS_DECAY = 0.99999  # decay rate of epsilon, i.e. exploration rate
-EPS_MIN = 0.1 # minimum epsilon, i.e. exploration rate
+EPS_DECAY = 0.99995  # decay rate of epsilon, i.e. exploration rate
+EPS_MIN = 0.05 # minimum epsilon, i.e. exploration rate
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -142,6 +142,12 @@ class Agent():
                 torch.save(self.qnetwork_local.state_dict(), 'checkpoint.pth')
             print('\rEpisode {}\tAverage Score: {:.2f}\tEps: {:.2f}'.format(i_episode, np.mean(scores_deque), eps))
         return scores
+
+    def load(self):
+        self.qnetwork_local.load_state_dict(torch.load('checkpoint.pth'))
+        self.qnetwork_local.eval()
+        self.qnetwork_target.load_state_dict(torch.load('checkpoint.pth'))
+        self.qnetwork_target.eval()
 
 
 class ReplayBuffer:

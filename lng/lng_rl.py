@@ -17,8 +17,7 @@ class DdpgLngSolver(object):
 
         while True:
             action = self.agent.act(states)
-            choice = np.argmax(action)
-            states, _, done, _ = env.step(choice)
+            states, _, done, _ = env.step(action)
             env.render()
             if done:
                 break
@@ -38,7 +37,8 @@ env = SingleLngEnv(
 
 # from ddpg import Agent
 from dqn import Agent
-agent = Agent(state_size=env.n_loc * 3 + 1, action_size=env.n_loc, random_seed=seed)
+agent = Agent(state_size=env.n_loc * 3 + 2, action_size=env.n_loc, random_seed=seed)
+agent.load()
 agent.train(env, 1000, 1000)
 
 solver = DdpgLngSolver(env, agent, 3721)

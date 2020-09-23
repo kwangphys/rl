@@ -3,3 +3,5 @@
 venv
 *.pyc
 *.pth
+lng/ffmpeg-*
+lng/results/*.png
